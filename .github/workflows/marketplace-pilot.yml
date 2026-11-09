@@ -1,0 +1,29 @@
+name: Marketplace pilot
+on:
+  push:
+    branches: [pilot/offline-validation]
+    paths: ['.github/workflows/marketplace-pilot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check pilot listing and Facebook session
+        env:
+          FACEBOOK_SESSION: ${{ secrets.FACEBOOK_SESSION }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          listing = json.loads(Path("pilot/audi_a3_listing.json").read_text())
+          print(f"{listing['title']} | {listing['price']} {listing['currency']}")
+          if not os.environ.get("FACEBOOK_SESSION"):
+              print("::error::No Facebook session configured for this runner")
+              raise SystemExit(1)
+          print("Facebook session secret is configured. Its validity was not tested.")
+          PY
