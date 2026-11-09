@@ -1,0 +1,15 @@
+{
+  "title": "Pantalla para Audi A3",
+  "price": 5500,
+  "currency": "MXN",
+  "description": "Pantalla para Audi A3. Precio: $5,500 MXN. Artículo mostrado en la fotografía. Consultar compatibilidad y accesorios incluidos.",
+  "location": "Monterrey, Nuevo León",
+  "location_source": "user_context",
+  "photo_filename": "IMG_1552.jpeg",
+  "photo_status": "provided_in_chat_not_uploaded_to_repository",
+  "condition": null,
+  "category": null,
+  "status": "pending_vps_and_facebook_session",
+  "delete_existing": false,
+  "groups": []
+}
