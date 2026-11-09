@@ -50,8 +50,7 @@ start.onclick = () => run("/session/start");
 check.onclick = () => run("/marketplace/check");
 </script></html>`;
 
-export default {
-  async fetch(request, env) {
+async function handleRequest(request, env, scheduled = false) {
     const path = new URL(request.url).pathname;
     if (path === "/" && request.method === "GET") {
       return new Response(panel, { headers: { ...headers, "Content-Type": "text/html; charset=utf-8" } });
@@ -124,6 +123,10 @@ export default {
             ? "Prueba correcta: sesión iniciada y formulario de Marketplace detectado. No se publicó ningún anuncio."
             : "No se confirmó el acceso a Marketplace. Abre Live View para revisar si Facebook solicita verificación.";
         }
+        if (scheduled) {
+          const passed = status.startsWith("Prueba correcta:");
+          return json({ status, code: passed ? "MARKETPLACE_OK" : "FACEBOOK_NEEDS_REVIEW" }, passed ? 200 : 409);
+        }
         // Live View is optional: its failure must not hide the login/check result.
         stage = "live_view";
         try {
@@ -192,5 +195,33 @@ export default {
         } catch {}
       }
     }
+}
+
+export default {
+  fetch(request, env) {
+    return handleRequest(request, env);
+  },
+
+  async scheduled(controller, env) {
+    // Cloudflare cron uses UTC. Only the requested November 9 run opens a browser.
+    if (controller.scheduledTime !== Date.parse("2026-11-10T00:15:00Z")) return;
+    const run = () => handleRequest(new Request("https://pilot.internal/session/start", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.PILOT_ACCESS_TOKEN}` },
+    }), env, true);
+    let response = await run();
+    let result = await response.json();
+    if (result.stage === "browser_launch" && result.code === "BROWSER_LIMIT") {
+      await new Promise(resolve => setTimeout(resolve, 25_000));
+      response = await run();
+      result = await response.json();
+    }
+    console.log(JSON.stringify({
+      event: "marketplace_scheduled_pilot",
+      status: result.status,
+      code: result.code,
+      ok: response.ok,
+    }));
+    if (!response.ok) throw new Error(result.code || "PILOT_FAILED");
   },
 };
