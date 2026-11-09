@@ -1,0 +1,8 @@
+{
+  "name": "bbis-marketplace-cloudflare",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.1.0"
+  }
+}
