@@ -8,5 +8,13 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "keep_vars": true
+  "keep_vars": true,
+  "triggers": {
+    "crons": [
+      "15 0 10 11 *"
+    ]
+  },
+  "observability": {
+    "enabled": true
+  }
 }
